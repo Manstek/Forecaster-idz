@@ -1,12 +1,16 @@
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
+import matplotlib.pyplot as plt
+import base64
+
+from io import BytesIO
 from django.shortcuts import render
 from .forms import TimeSeriesForm
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
-import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
+
 
 # Генерация временного ряда курса доллара к рублю
 def generate_dollar_to_ruble_series(n_samples=1000, start_rate=75):
@@ -17,6 +21,7 @@ def generate_dollar_to_ruble_series(n_samples=1000, start_rate=75):
     series = start_rate + trend + seasonality + noise
     return series
 
+
 # Подготовка данных
 def prepare_data(series, time_steps):
     X, y = [], []
@@ -24,6 +29,7 @@ def prepare_data(series, time_steps):
         X.append(series[i:i + time_steps])
         y.append(series[i + time_steps])
     return np.array(X), np.array(y)
+
 
 # Главная страница
 def index(request):
@@ -70,9 +76,9 @@ def index(request):
         plt.plot(range(time_steps, n_samples), y_original, label='Истинные значения', color='blue')
         plt.plot(range(time_steps, n_samples), predictions, label='Прогноз', color='orange')
         plt.xlabel('Время')
-        plt.ylabel('Курс USD/RUB')
+        plt.ylabel('Значения')
         plt.legend()
-        plt.title('Прогнозирование курса доллара к рублю с помощью LSTM')
+        plt.title('Прогнозирование времянного ряда с помощью LSTM')
 
         # Сохранение графика в формате base64
         buffer = BytesIO()
