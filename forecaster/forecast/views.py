@@ -12,7 +12,6 @@ from keras.models import Sequential
 from keras.layers import LSTM, Dense
 
 
-# Генерация временного ряда курса доллара к рублю
 def generate_dollar_to_ruble_series(n_samples=1000, start_rate=75):
     time = np.arange(0, n_samples)
     trend = 0.01 * time  # Медленный рост курса
@@ -31,22 +30,33 @@ def prepare_data(series, time_steps):
     return np.array(X), np.array(y)
 
 
-# Главная страница
+# Обработка файла
+def process_file(file):
+    content = file.read().decode('utf-8')
+    lines = content.splitlines()
+    series = [float(line.strip()) for line in lines if line.strip()]
+    return np.array(series)
+
+
 def index(request):
-    form = TimeSeriesForm(request.POST or None)
+    form = TimeSeriesForm(request.POST or None, request.FILES or None)
     plot_url = None
 
     if request.method == "POST" and form.is_valid():
-        n_samples = form.cleaned_data['n_samples']
-        start_rate = form.cleaned_data['start_rate']
-        time_steps = form.cleaned_data['time_steps']
-        random_generate = form.cleaned_data['random_generate']
+        # Получаем параметры из формы
+        n_samples = form.cleaned_data.get('n_samples', 1000)  # Устанавливаем дефолтное значение
+        start_rate = form.cleaned_data.get('start_rate', 75.0)  # Устанавливаем дефолтное значение
+        time_steps = form.cleaned_data.get('time_steps', 10)  # Устанавливаем дефолтное значение
+        random_generate = form.cleaned_data.get('random_generate', False)
 
-        # Генерация временного ряда
-        if random_generate:
+        # Получаем временной ряд
+        if form.cleaned_data.get('user_series'):  # Если файл загружен
+            file = form.cleaned_data['user_series']
+            series = process_file(file)
+            n_samples = len(series)  # Обновляем количество точек в зависимости от файла
+        elif random_generate:  # Если генерация случайного ряда
             series = generate_dollar_to_ruble_series(n_samples, start_rate)
-        else:
-            # Получение временного ряда из ввода пользователя (например, как список)
+        else:  # Если ничего не выбрано
             series = np.array([float(x) for x in form.cleaned_data.get('user_series', '').split(',')])
 
         # Нормализация данных
@@ -78,7 +88,7 @@ def index(request):
         plt.xlabel('Время')
         plt.ylabel('Значения')
         plt.legend()
-        plt.title('Прогнозирование времянного ряда с помощью LSTM')
+        plt.title('Прогнозирование временного ряда с помощью LSTM')
 
         # Сохранение графика в формате base64
         buffer = BytesIO()

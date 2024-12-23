@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Прогнозирование курса доллара к рублю</title>
+    <title>Прогнозирование времянных рядов</title>
 </head>
 <body>
-    <h1>Прогнозирование курса доллара к рублю</h1>
-    <form method="post">
+    <h1>Прогнозирование времянных рядов</h1>
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Получить прогноз</button>
@@ -14,7 +14,7 @@
 
     {% if plot_url %}
         <h2>График прогнозирования</h2>
-        <img src="data:image/png;base64,{{ plot_url }}" alt="Прогнозирование курса доллара к рублю">
+        <img src="data:image/png;base64,{{ plot_url }}">
     {% endif %}
 </body>
 </html>
